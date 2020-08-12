@@ -13,7 +13,7 @@ package main
 
 import (
 	"encoding/json"
-    "github.com/iNightd/go-amqp"
+	"github.com/iNightd/go-amqp"
 	amqp_default_connect "github.com/iNightd/go-amqp/driver/amqp"
 	"log"
 	"sync"
