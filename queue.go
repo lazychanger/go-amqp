@@ -41,6 +41,8 @@ type Queue struct {
 	isReleaseStock bool
 	// 是否重启消费
 	isReloadConsume int
+	// 是否停止消费
+	isStopConsume bool
 	// 是否准备好
 	already int
 
@@ -49,10 +51,16 @@ type Queue struct {
 	cs []consume
 }
 
+type MessageStatus int8
+
 const (
 	AlreadyStop    = 0
 	AlreadyReload  = 1
 	AlreadySucceed = 2
+
+	MessageStatusSucceed MessageStatus = 1
+	MessageStatusError   MessageStatus = 2
+	MessageStatusRequeue MessageStatus = 3
 )
 
 // 提供重启服务
@@ -236,10 +244,21 @@ func (q *Queue) Consume(name string, consumeFunc ConsumeFunc, repeat int) error 
 	return nil
 }
 
+// 暂停消费
+func (q *Queue) StopConsume() {
+	q.isStopConsume = true
+}
+
+// 启动消费
+func (q *Queue) StartConsume() {
+	q.isStopConsume = false
+	q.reloadConsume()
+}
+
 // 实际触发消费
 func (q *Queue) reloadConsume() {
 	// 如果未启动，直接返回
-	if q.already != AlreadySucceed {
+	if q.already != AlreadySucceed || q.isStopConsume {
 		return
 	}
 	// 推送重启消费
@@ -251,15 +270,23 @@ func (q *Queue) reloadConsume() {
 		// 并发消费
 		for l := 0; l < c.repeat; l++ {
 			name := fmt.Sprintf("%s_%d-%d", c.name, i, l)
-			msgs, err := q.channel.Consume(q.name, name, true, false, false, false, nil)
+			msgs, err := q.channel.Consume(q.name, name, false, false, false, false, nil)
 			if err != nil {
 				log.Fatalf("[AMQP] customer register err;name: %s, %s", name, err)
 			} else {
 				go func(c ConsumeFunc, consumeName string, reloadConsume int) {
 					for msg := range msgs {
-						c(msg.Body, consumeName)
+						switch c(msg.Body, consumeName) {
+						case MessageStatusSucceed:
+						case MessageStatusError:
+							_ = msg.Ack(true)
+							break
+						case MessageStatusRequeue:
+							_ = msg.Reject(true)
+							break
+						}
 						// 如果channel重启或者消费重启，都结束当前消费，防止溢出，或者正在关闭
-						if q.already != AlreadySucceed || q.isReloadConsume != reloadConsume || q.close {
+						if q.already != AlreadySucceed || q.isReloadConsume != reloadConsume || q.close || q.isStopConsume {
 							break
 						}
 					}
@@ -309,4 +336,4 @@ type consume struct {
 	consumeFunc ConsumeFunc
 	repeat      int
 }
-type ConsumeFunc func(data []byte, name string)
+type ConsumeFunc func(data []byte, name string) MessageStatus

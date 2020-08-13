@@ -40,7 +40,7 @@ func TestPublish(t *testing.T) {
 	a, q, _ := initQueue()
 	var wg sync.WaitGroup
 	var succeed = 0
-	printErr(q.Consume("reloadConsume", func(data []byte, name string) {
+	printErr(q.Consume("reloadConsume", func(data []byte, name string) MessageStatus {
 		var body Map
 		if err := json.Unmarshal(data, &body); err != nil {
 			log.Println(name, err)
@@ -49,6 +49,7 @@ func TestPublish(t *testing.T) {
 		}
 		wg.Done()
 		succeed++
+		return MessageStatusSucceed
 	}, 3))
 	// 控制速度
 	ticker := time.NewTicker(time.Second / 100)
