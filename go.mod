@@ -1,4 +1,4 @@
-module github.com/iNightd/go-amqp
+module github.com/lazychanger/go-amqp
 
 go 1.14
 
