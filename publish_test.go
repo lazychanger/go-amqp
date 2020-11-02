@@ -14,9 +14,9 @@ type Map map[string]interface{}
 func initQueue() (*Connection, *Queue, error) {
 	a, err := New(
 		SetDriver(amqp.New(&amqp.Config{
-			User:  "root",
-			Pass:  "root",
-			VHost: "example",
+			User:  "guest",
+			Pass:  "guest",
+			VHost: "/",
 			Host:  "127.0.0.1",
 			Port:  5672,
 		})),
@@ -45,7 +45,7 @@ func TestPublish(t *testing.T) {
 		if err := json.Unmarshal(data, &body); err != nil {
 			log.Println(name, err)
 		} else {
-			//log.Println(name, string(data[:]))
+			log.Println("read data", name, succeed)
 		}
 		wg.Done()
 		succeed++
@@ -64,7 +64,7 @@ func TestPublish(t *testing.T) {
 		} else {
 			wg.Add(1)
 		}
-		if i == 3000 {
+		if i >= 100 {
 			ticker.Stop()
 		}
 	}

@@ -270,23 +270,29 @@ func (q *Queue) reloadConsume() {
 		// 并发消费
 		for l := 0; l < c.repeat; l++ {
 			name := fmt.Sprintf("%s_%d-%d", c.name, i, l)
-			msgs, err := q.channel.Consume(q.name, name, false, false, false, false, nil)
+			msgs, err := q.channel.Consume(q.name, name, true, false, false, false, nil)
 			if err != nil {
 				log.Fatalf("[AMQP] customer register err;name: %s, %s", name, err)
 			} else {
+				log.Printf("[AMQP] customer register succeed;name: %s", name)
 				go func(c ConsumeFunc, consumeName string, reloadConsume int) {
 					for msg := range msgs {
-						switch c(msg.Body, consumeName) {
-						case MessageStatusSucceed:
-						case MessageStatusError:
-							_ = msg.Ack(true)
-							break
-						case MessageStatusRequeue:
-							_ = msg.Reject(true)
+						switch status := c(msg.Body, consumeName); status {
+						//case MessageStatusSucceed:
+						//case MessageStatusError:
+						//	_ = msg.Ack(true)
+						//	break
+						//case MessageStatusRequeue:
+						//	_ = msg.Reject(true)
+						//	break
+						default:
+							//log.Printf("NO CHECK STATUS \"%d\"", status)
+							//_ = msg.Ack(true)
 							break
 						}
 						// 如果channel重启或者消费重启，都结束当前消费，防止溢出，或者正在关闭
 						if q.already != AlreadySucceed || q.isReloadConsume != reloadConsume || q.close || q.isStopConsume {
+							log.Printf("关闭")
 							break
 						}
 					}
