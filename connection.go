@@ -111,7 +111,6 @@ func (c *Connection) Close() error {
 	if c.isConnected {
 		return alreadyClosed
 	}
-
 	var wg sync.WaitGroup
 	// 批量关闭
 	for i := 0; i < len(c.qs); i++ {

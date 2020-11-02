@@ -261,6 +261,7 @@ func (q *Queue) reloadConsume() {
 	if q.already != AlreadySucceed || q.isStopConsume {
 		return
 	}
+	//log.Println("重连消费")
 	// 推送重启消费
 	q.isReloadConsume++
 	// 记录当前消费重启值

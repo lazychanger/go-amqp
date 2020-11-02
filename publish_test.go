@@ -66,10 +66,11 @@ func TestPublish(t *testing.T) {
 		}
 		if i >= 100 {
 			ticker.Stop()
+			break
 		}
 	}
-	printErr(a.Close())
 	wg.Wait()
+	printErr(a.Close())
 	log.Println(succeed)
 }
 
