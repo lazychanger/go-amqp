@@ -14,8 +14,8 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/iNightd/go-amqp"
-	amqp_default_connect "github.com/iNightd/go-amqp/driver/amqp"
+	"github.com/lazychanger/go-amqp"
+	amqp_default_connect "github.com/lazychanger/go-amqp/driver/amqp"
 	"log"
 	"sync"
 	"testing"

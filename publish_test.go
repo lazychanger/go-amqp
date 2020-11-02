@@ -2,7 +2,7 @@ package go_amqp
 
 import (
 	"encoding/json"
-	"github.com/iNightd/go-amqp/driver/amqp"
+	"github.com/lazychanger/go-amqp/driver/amqp"
 	"log"
 	"sync"
 	"testing"

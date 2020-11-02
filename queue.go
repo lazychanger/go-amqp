@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/iNightd/go-amqp/tools"
+	"github.com/lazychanger/go-amqp/tools"
 	"github.com/streadway/amqp"
 	"log"
 	"sync"
